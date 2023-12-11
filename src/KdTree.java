@@ -6,6 +6,8 @@ import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 // Need to update and fix
+//  Fix KdTree Constructor
+// - Test insert and rage methods in Main.
 // - add rectangle property of each Node which is required for range and nearest neighbor methods.
 // - implement range method
 // - implement nearest method
@@ -46,9 +48,9 @@ public class KdTree{
         pointSet(x.rt,q);
     }
 
-    public KdTree(){
+    /*public KdTree(){
 //        set = new tree2D<Point2D>();
-    } //Construct empty set of points
+    } //Construct empty set of points*/
 
     public boolean isEmpty(){
         return sz==0;
@@ -178,27 +180,28 @@ public class KdTree{
     } // nearest neighbor in the set to point p; null if the set is empty
 
     public static void main(String[] args){
-        PointSET pSet = new PointSET();
+        KdTree pSet = new KdTree();
         StdOut.println("pSet.isEmpty() = " + pSet.isEmpty());
         StdOut.println("pSet.size() = " + pSet.size());
         Point2D p = new Point2D(2.0,1.0);
         StdOut.println("pSet.contains(Point(1.0,2.0)) = " + pSet.contains(p));
-        StdOut.println("pSet.nearest(Point(1.0,2.0))) = " + pSet.nearest(p));
+//        StdOut.println("pSet.nearest(Point(1.0,2.0))) = " + pSet.nearest(p));
         while(!StdIn.isEmpty()){
             double x = StdIn.readDouble();
             double y = StdIn.readDouble();
             p = new Point2D(x,y);
 //            Point2D p = new Point2D(x,y);
             pSet.insert(p);
+            StdOut.println(p.toString());
         }
 
         Point2D pPert = new Point2D(p.x()+1e-4,p.y()+1e-4);
         StdOut.println("pSet.isEmpty() = " + pSet.isEmpty());
         StdOut.println("pSet.size() = " + pSet.size());
         StdOut.println("pSet.contains(Point(last added point)) = " + pSet.contains(p));
-        StdOut.println("pSet.nearest(last added point) = " + pSet.nearest(p));
+//        StdOut.println("pSet.nearest(last added point) = " + pSet.nearest(p));
         StdOut.println("pSet.contains(Point(last added point + delX,delY)) = " + pSet.contains(pPert));
-        StdOut.println("pSet.nearest(last added point + delX,delY) = " + pSet.nearest(pPert));
+//        StdOut.println("pSet.nearest(last added point + delX,delY) = " + pSet.nearest(pPert));
 
 //        StdDraw.setScale(-.05, 1.05);
         StdDraw.enableDoubleBuffering();
