@@ -162,11 +162,44 @@ public class KdTree{
 
     //draw all points to standard draw
     public void draw(){
-        for(Point2D p : pointSet()){
-            p.draw();
+        if(this.isEmpty())
+            return;
+
+        draw(root,0);
+//        for(Point2D p : pointSet()){
+//            p.draw();
 //            StdDraw.point(p.x(),p.y());
-        }
+//        }
 //        StdDraw.show();
+    }
+
+    private void draw(Node x, int level){
+        if(x==null) return;
+
+        int nextLevel = (level+1)%2;
+        draw(x.lb,nextLevel);
+        draw(x.rt,nextLevel);
+
+        StdDraw.setPenColor(StdDraw.BLACK);
+        x.p.draw();
+        double x1,y1,x2,y2;
+        //vertical line
+        if(level == 0){
+            StdDraw.setPenColor(StdDraw.RED);
+            x1 = x.p.x();
+            x2 = x.p.x();
+            y1 = x.rect.ymin();
+            y2 = x.rect.ymax();
+        }
+        //horizontal line
+        else{
+            StdDraw.setPenColor(StdDraw.BLUE);
+            y1 = x.p.y();
+            y2 = x.p.y();
+            x1 = x.rect.xmin();
+            x2 = x.rect.xmax();
+        }
+        StdDraw.line(x1,y1,x2,y2);
     }
 
     public Iterable<Point2D> range(RectHV rect){
