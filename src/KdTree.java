@@ -6,12 +6,10 @@ import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 // Need to update and fix
-//  Fix KdTree Constructor
-// - Test insert and rage methods in Main.
-// - add rectangle property of each Node which is required for range and nearest neighbor methods.
+// - Check that add rectangle property of each Node is being set properly.
+// - verify by plotting point with its bounding rectangle and or horizontal/vertical lines for visual inspection.
 // - implement range method
 // - implement nearest method
-// - private insert passes null argument as rectangle. Update to pass proper rectangle
 public class KdTree{
     // Implement these methods for private tree2D class
     // size
@@ -65,23 +63,44 @@ public class KdTree{
             throw new IllegalArgumentException("Null argument");
 
 //        RectHV currRec = new RectHV(0.0,0.0,1.0,1.0);
-        root = insert(root,p,0);
+        double[] rectBounds = {0.0,0.0,1.0,1.0}; //xmin,ymin,xmax,ymax
+        root = insert(root,p,0,rectBounds);
         //set.add(p);
     } // add point to set
 
-    private Node insert(Node x, Point2D p, int level){
-        if(x==null){sz++; return new Node(p,null);}
+    private Node insert(Node x, Point2D p, int level, double[] rectBounds){
+        if(x==null){sz++;
+            RectHV rect = new RectHV(rectBounds[0],rectBounds[1],rectBounds[2],rectBounds[3]);
+            return new Node(p,rect);
+        }
         int cmp = compareTo(p,x.p,level);
-        int nextLevel = (++level)%2;
-        if      (cmp < 0) x.lb = insert(x.lb, p, nextLevel);
-        else if (cmp > 0) x.rt = insert(x.rt,p,nextLevel);
+        int nextLevel = (level+1)%2;
+        if(cmp < 0) {
+            if(level == 0)
+                rectBounds[2] = x.p.x();
+            else
+                rectBounds[3] = x.p.y();
+            x.lb = insert(x.lb, p, nextLevel,rectBounds);
+        }
+        else if (cmp > 0) {
+            if(level == 0)
+                rectBounds[0] = x.p.x();
+            else
+                rectBounds[1] = x.p.y();
+            x.rt = insert(x.rt,p,nextLevel,rectBounds);
+        }
         // If current dimension is equal compare other dimension. If equal, replace point, otherwise insert into right subtree.
         else {
             int cmp2 = compareTo(p,x.p,nextLevel);
             if(cmp2 == 0)
                 x.p = p;
-            else
-                x.rt = insert(x.rt,p,nextLevel);
+            else {
+                if (level == 0)
+                    rectBounds[0] = x.p.x();
+                else
+                    rectBounds[1] = x.p.y();
+                x.rt = insert(x.rt, p, nextLevel,rectBounds);
+            }
         }
         return x;
     }
@@ -97,6 +116,7 @@ public class KdTree{
         }
         return thisKey;
     }
+
 
     private int compareTo(Point2D p, Point2D that, int level){
 //        int idx = level % 2;
@@ -118,6 +138,7 @@ public class KdTree{
         return 0;
     }
 
+
     public boolean contains(Point2D p){
         if(p==null)
             throw new IllegalArgumentException("Null argument");
@@ -127,7 +148,7 @@ public class KdTree{
     private boolean contains(Node x, Point2D p, int level){
         if (x==null) return false;
         int cmp = compareTo(p,x.p,level);
-        int nextLevel = (++level)%2;
+        int nextLevel = (level+1)%2;
         if (cmp < 0) return contains(x.lb,p,nextLevel);
         if (cmp > 0) return contains(x.rt,p,nextLevel);
         else{
@@ -153,12 +174,25 @@ public class KdTree{
             throw new IllegalArgumentException("Null argument");
 
         Queue<Point2D> q = new Queue<Point2D>();
-        for(Point2D p : pointSet()){
-            if(rect.contains(p))
-                q.enqueue(p);
-        }
+        range(root,rect,q);
+//        for(Point2D p : pointSet()){
+//            if(rect.contains(p))
+//                q.enqueue(p);
+//        }
         return q;
     } //all points that are inside (or on boundary of) the rectangle
+
+    private void range(Node x, RectHV rect, Queue<Point2D> q){
+        if(x==null) return;
+        if(x.rect.intersects(rect)){
+            range(x.lb, rect, q);
+
+            if(rect.contains(x.p))
+                q.enqueue(x.p);
+
+            range(x.rt, rect, q);
+        }
+    }
 
     public Point2D nearest(Point2D p){
         if(p==null)
@@ -168,16 +202,40 @@ public class KdTree{
             return null;
 
         double minDist = Double.POSITIVE_INFINITY;
-        Point2D minP = null;
-        for(Point2D pSet : pointSet()){
-            double currDist = pSet.distanceSquaredTo(p);
-            if(currDist < minDist){
-                minDist = currDist;
-                minP = pSet;
-            }
-        }
-        return minP;
+        Point2D pNearest = root.p;
+        nearest(root,p,pNearest,minDist,0);
+        return pNearest;
+
+
     } // nearest neighbor in the set to point p; null if the set is empty
+
+    private void nearest(Node x, Point2D pQuery, Point2D pNearest, double minDist, int level){
+        if(x==null) return;
+        if(x.rect.distanceSquaredTo(pQuery) < minDist){
+            int nextLevel = (level+1)%2;
+            int cmp = compareTo(pQuery,x.p,level);
+            Node n1, n2;
+            if(cmp < 0){
+                n1 = x.lb;
+                n2 = x.rt;
+            }
+            else{
+                n1 = x.rt;
+                n2 = x.lb;
+            }
+
+            nearest(n1, pQuery, pNearest, minDist, nextLevel);
+
+            double currDist = x.p.distanceSquaredTo(pQuery);
+
+            if(currDist < minDist){
+                    minDist = currDist;
+                    pNearest = x.p;
+            }
+
+            nearest(n2, pQuery, pNearest, minDist, nextLevel);
+        }
+    }
 
     public static void main(String[] args){
         KdTree pSet = new KdTree();
