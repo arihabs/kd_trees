@@ -153,7 +153,7 @@ public class KdTree{
         if (cmp > 0) return contains(x.rt,p,nextLevel);
         else{
             int cmp2 = compareTo(p,x.p,nextLevel);
-            if(cmp == 0)
+            if(cmp2 == 0)
                 return true;
             else
                 return contains(x.rt,p,nextLevel);
