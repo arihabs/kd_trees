@@ -289,14 +289,21 @@ public class KdTree{
                 n2 = x.lb;
             }
 
-            nearest(n1, pQuery, nn, nextLevel);
-
             double currDist = x.p.distanceSquaredTo(pQuery);
 
             if(currDist < nn.minDist){
                 nn.minDist = currDist;
                 nn.pNearest = x.p;
             }
+
+            nearest(n1, pQuery, nn, nextLevel);
+
+//            double currDist = x.p.distanceSquaredTo(pQuery);
+//
+//            if(currDist < nn.minDist){
+//                nn.minDist = currDist;
+//                nn.pNearest = x.p;
+//            }
 
             nearest(n2, pQuery, nn, nextLevel);
         }
