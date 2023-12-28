@@ -234,10 +234,14 @@ public class KdTree{
         if(this.isEmpty())
             return null;
 
-        double minDist = Double.POSITIVE_INFINITY;
-        Point2D pNearest = root.p;
-        nearest(root,p,pNearest,minDist,0);
-        return pNearest;
+//        double minDist = Double.POSITIVE_INFINITY;
+//        Point2D pNearest = root.p;
+//        nearest(root,p,pNearest,minDist,0);
+
+        NN nn = new NN();
+        nn.pNearest = root.p;
+        nearest(root,p,nn,0);
+        return nn.pNearest;
 
 
     } // nearest neighbor in the set to point p; null if the set is empty
@@ -268,6 +272,38 @@ public class KdTree{
 
             nearest(n2, pQuery, pNearest, minDist, nextLevel);
         }
+    }
+
+    private void nearest(Node x, Point2D pQuery, NN nn, int level){
+        if(x==null) return;
+        if(x.rect.distanceSquaredTo(pQuery) < nn.minDist){
+            int nextLevel = (level+1)%2;
+            int cmp = compareTo(pQuery,x.p,level);
+            Node n1, n2;
+            if(cmp < 0){
+                n1 = x.lb;
+                n2 = x.rt;
+            }
+            else{
+                n1 = x.rt;
+                n2 = x.lb;
+            }
+
+            nearest(n1, pQuery, nn, nextLevel);
+
+            double currDist = x.p.distanceSquaredTo(pQuery);
+
+            if(currDist < nn.minDist){
+                nn.minDist = currDist;
+                nn.pNearest = x.p;
+            }
+
+            nearest(n2, pQuery, nn, nextLevel);
+        }
+    }
+    private class NN{
+        double minDist = Double.POSITIVE_INFINITY;
+        Point2D pNearest = null;
     }
 
     public static void main(String[] args){
